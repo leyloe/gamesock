@@ -14,7 +14,7 @@ pub fn Frame(comptime S: type) type {
 
         pub fn writePacket(self: *Self, allocator: std.mem.Allocator, buffer: []const u8) !void {
             const len: u32 = @intCast(buffer.len);
-            var len_bytes: [4]u8 = undefined;
+            var len_bytes: [HEADER_SIZE]u8 = undefined;
 
             std.mem.writeInt(u32, &len_bytes, len, .big);
 
