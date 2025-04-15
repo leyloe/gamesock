@@ -18,19 +18,19 @@ pub fn Frame(comptime S: type) type {
 
             std.mem.writeInt(u32, &len_bytes, len, .big);
 
-            var buf = std.ArrayList(u8).init(allocator);
-            defer buf.deinit();
+            var buf = try allocator.alloc(u8, buffer.len + HEADER_SIZE);
+            defer allocator.free(buf);
 
-            try buf.appendSlice(len_bytes[0..HEADER_SIZE]);
-            try buf.appendSlice(buffer[0..buffer.len]);
+            buf[0..HEADER_SIZE] = len_bytes;
+            buf[(HEADER_SIZE + 1)..buffer.len] = buffer;
 
-            const bytes_written = try self.inner.write(buf.items);
-            if (bytes_written != buf.items.len) {
+            const bytes_written = try self.inner.write(buf);
+            if (bytes_written != buf.len) {
                 return error.WriteError;
             }
         }
 
-        pub fn readPacket(self: *Self, buf: []u8) !void {
+        pub fn readPacket(self: *Self, allocator: std.mem.Allocator) ![]u8 {
             var len: [4]u8 = undefined;
 
             var bytes_read = try self.inner.read(len[0..HEADER_SIZE]);
@@ -40,10 +40,14 @@ pub fn Frame(comptime S: type) type {
 
             const packet_len = std.mem.readInt(u32, &len, .big);
 
+            var buf = try allocator.alloc(u8, packet_len);
+
             bytes_read = try self.inner.read(buf[0..packet_len]);
             if (bytes_read != packet_len) {
                 return error.ReadError;
             }
+
+            return buf;
         }
     };
 }
