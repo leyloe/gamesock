@@ -30,9 +30,7 @@ pub fn Frame(comptime S: type) type {
             }
         }
 
-        pub fn readPacket(self: *Self, allocator: std.mem.Allocator) !std.ArrayList(u8) {
-            var buf = std.ArrayList(u8).init(allocator);
-
+        pub fn readPacket(self: *Self, buf: []u8) !void {
             var len: [4]u8 = undefined;
 
             var bytes_read = try self.inner.read(len[0..HEADER_SIZE]);
@@ -42,27 +40,10 @@ pub fn Frame(comptime S: type) type {
 
             const packet_len = std.mem.readInt(u32, &len, .big);
 
-            bytes_read = try self.inner.read(buf.items[0..packet_len]);
+            bytes_read = try self.inner.read(buf[0..packet_len]);
             if (bytes_read != packet_len) {
                 return error.ReadError;
             }
-
-            return buf;
-        }
-
-        pub fn writeSerialize(self: *Self, value: anytype, allocator: std.mem.Allocator) !void {
-            var buf = std.ArrayList(u8).init(allocator);
-            defer buf.deinit();
-
-            try value.serialize(&buf.items);
-
-            try self.writePacket(allocator, buf.items);
-        }
-
-        pub fn readDeserialize(self: *Self, comptime T: type, allocator: std.mem.Allocator) !T {
-            const buf = try self.readPacket(allocator);
-            defer buf.deinit();
-            return T.deserialize(buf.items, allocator);
         }
     };
 }
