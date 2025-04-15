@@ -21,8 +21,8 @@ pub fn Frame(comptime S: type) type {
             var buf = try allocator.alloc(u8, buffer.len + HEADER_SIZE);
             defer allocator.free(buf);
 
-            buf[0..HEADER_SIZE] = len_bytes;
-            buf[(HEADER_SIZE + 1)..buffer.len] = buffer;
+            @memcpy(buf[0..HEADER_SIZE], len_bytes[0..HEADER_SIZE]);
+            @memcpy(buf[HEADER_SIZE..], buffer);
 
             const bytes_written = try self.inner.write(buf);
             if (bytes_written != buf.len) {
