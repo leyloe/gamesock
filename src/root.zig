@@ -1,23 +1,26 @@
 const Frame = @import("frame.zig").Frame;
+const Server = @import("Server.zig");
 
-test "Write Test" {
+test "Echo server" {
     const std = @import("std");
 
     const allocator = std.testing.allocator;
 
-    const file = try std.fs.cwd().createFile("test_write.bin", .{ .read = true });
-    defer file.close();
+    var server = try Server.init();
+    defer server.deinit();
 
-    var frame = Frame(std.fs.File).init(file);
+    try server.bind(8932);
 
-    const data = "\x33\x44\x55\x66\x77\x88\x99\xAA\xBB\xCC\xDD\xEE\xFF";
+    var frame = Frame(Server).init(server);
 
-    try frame.writePacket(allocator, data);
+    while (true) {
+        const result = try frame.readPacket(allocator);
 
-    try file.seekTo(0);
+        const packet = result orelse continue;
+        defer allocator.free(packet);
 
-    const bytes = try frame.readPacket(allocator);
-    defer allocator.free(bytes);
+        std.debug.print("{s}\n", .{packet});
 
-    std.debug.print("{d}", .{bytes});
+        break;
+    }
 }

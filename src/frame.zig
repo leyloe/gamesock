@@ -30,10 +30,10 @@ pub fn Frame(comptime S: type) type {
             }
         }
 
-        pub fn readPacket(self: *Self, allocator: std.mem.Allocator) ![]u8 {
+        pub fn readPacket(self: *Self, allocator: std.mem.Allocator) !?[]u8 {
             var len: [4]u8 = undefined;
 
-            var bytes_read = try self.inner.read(len[0..HEADER_SIZE]);
+            var bytes_read = try self.inner.read(len[0..HEADER_SIZE]) orelse return null;
             if (bytes_read != HEADER_SIZE) {
                 return error.ReadError;
             }
@@ -42,7 +42,7 @@ pub fn Frame(comptime S: type) type {
 
             var buf = try allocator.alloc(u8, packet_len);
 
-            bytes_read = try self.inner.read(buf[0..packet_len]);
+            bytes_read = try self.inner.read(buf[0..packet_len]) orelse return null;
             if (bytes_read != packet_len) {
                 return error.ReadError;
             }
