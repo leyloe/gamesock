@@ -1,5 +1,5 @@
-const Frame = @import("frame.zig").Frame;
-const Server = @import("Server.zig");
+pub const Frame = @import("frame.zig").Frame;
+pub const Server = @import("Server.zig");
 
 test "Echo server" {
     const std = @import("std");
