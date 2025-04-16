@@ -12,7 +12,7 @@ pub fn Frame(comptime S: type) type {
             return Self{ .inner = stream };
         }
 
-        pub fn writePacket(self: *Self, allocator: std.mem.Allocator, buffer: []const u8) !void {
+        pub fn writePacket(self: *Self, allocator: std.mem.Allocator, buffer: []const u8) !?void {
             const len: u32 = @intCast(buffer.len);
             var len_bytes: [HEADER_SIZE]u8 = undefined;
 
@@ -24,7 +24,7 @@ pub fn Frame(comptime S: type) type {
             @memcpy(buf[0..HEADER_SIZE], len_bytes[0..HEADER_SIZE]);
             @memcpy(buf[HEADER_SIZE..], buffer);
 
-            const bytes_written = try self.inner.write(buf);
+            const bytes_written = try self.inner.write(buf) orelse return null;
             if (bytes_written != buf.len) {
                 return error.WriteError;
             }
