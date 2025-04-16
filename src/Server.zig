@@ -1,7 +1,7 @@
 const std = @import("std");
 const Self = @This();
 
-const DEFAULT_HOST = "127.0.0.1";
+const DEFAULT_HOST = "0.0.0.0";
 
 socket: std.posix.socket_t,
 
