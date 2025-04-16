@@ -14,9 +14,8 @@ test "Echo server" {
     var frame = Frame(Server).init(server);
 
     while (true) {
-        const result = try frame.readPacket(allocator);
+        const packet = try frame.readPacket(allocator) orelse continue;
 
-        const packet = result orelse continue;
         defer allocator.free(packet);
 
         std.debug.print("{s}\n", .{packet});
